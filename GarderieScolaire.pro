@@ -10,11 +10,15 @@ CONFIG += c++11
 
 SOURCES += \
     connection.cpp \
+    eleve.cpp \
+    enseignant.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     connection.h \
+    eleve.h \
+    enseignant.h \
     mainwindow.h
 
 FORMS += \
