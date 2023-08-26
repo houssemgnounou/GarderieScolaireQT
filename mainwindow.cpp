@@ -113,6 +113,16 @@ void MainWindow::on_btn_AjouterEnseignant_clicked()
         return;
     }
 
+    if (enseignant.emailExists(email)) {
+        QMessageBox::critical(this, "Erreur", "L'adresse e-mail existe déjà dans la base de données.");
+        return;
+    }
+
+    if (enseignant.telephoneExists(numeroTelephone)) {
+        QMessageBox::critical(this, "Erreur", "Le numéro de téléphone existe déjà dans la base de données.");
+        return;
+    }
+
     Enseignant enseignant(nom, prenom, dateNaissance, adresse, email, numeroTelephone, dateEmbauche, matiereEnseignee);
 
     if (enseignant.ajouter()) {
@@ -253,6 +263,16 @@ void MainWindow::on_btn_ModifierEnseignant_clicked()
         return;
     }
 
+    if (enseignant.emailExists(email)) {
+        QMessageBox::critical(this, "Erreur", "L'adresse e-mail existe déjà dans la base de données.");
+        return;
+    }
+
+    if (enseignant.telephoneExists(numeroTelephone)) {
+        QMessageBox::critical(this, "Erreur", "Le numéro de téléphone existe déjà dans la base de données.");
+        return;
+    }
+
     Enseignant enseignant(nom, prenom, dateNaissance, adresse, email, numeroTelephone, dateEmbauche, matiereEnseignee);
 
     if (enseignant.modifier(currentEnseignantId)) {
@@ -326,5 +346,24 @@ void MainWindow::on_Trie_enseignantDESC_clicked()
 void MainWindow::on_Trie_enseignantASC_clicked()
 {
     ui->table_enseignant->setModel(enseignant.trierParNomDateEmbaucheMatiereASC());
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////// Partie éleves
+
+
+void MainWindow::on_btn_openHomeEleve_clicked()
+{
+    ui->table_eleve->setModel(eleve.afficherEleves());
+
+    ui->stackedWidget->setCurrentIndex(2);
+}
+
+
+void MainWindow::on_btn_openAjoutEleve_clicked()
+{
+    ui->btn_ModifierEleve->hide();
+    ui->btn_AjouterEleve->show();
+    ui->stackedWidget->setCurrentIndex(3);
 }
 

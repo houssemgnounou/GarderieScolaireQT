@@ -231,3 +231,32 @@ QtCharts::QChartView* Enseignant::generateStatisticsChart()
     return chartView;
 }
 
+
+bool Enseignant::emailExists( QString &email)  {
+    QSqlQuery query;
+    query.prepare("SELECT COUNT(*) FROM Enseignants WHERE Email = ?");
+    query.addBindValue(email);
+
+    if (query.exec() && query.next()) {
+        int count = query.value(0).toInt();
+        return count > 0;
+    }
+
+    // Handle database error here (return false, show error message, etc.)
+    return false;
+}
+
+
+bool Enseignant::telephoneExists( QString &telephone)  {
+    QSqlQuery query;
+    query.prepare("SELECT COUNT(*) FROM Enseignants WHERE Numero_Telephone = ?");
+    query.addBindValue(telephone);
+
+    if (query.exec() && query.next()) {
+        int count = query.value(0).toInt();
+        return count > 0;
+    }
+
+    // Handle database error here (return false, show error message, etc.)
+    return false;
+}

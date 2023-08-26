@@ -42,6 +42,10 @@ private slots:
 
     void on_Trie_enseignantASC_clicked();
 
+    void on_btn_openHomeEleve_clicked();
+
+    void on_btn_openAjoutEleve_clicked();
+
 private:
     Ui::MainWindow *ui;
     Enseignant enseignant;

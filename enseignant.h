@@ -24,7 +24,7 @@ public:
     QString getMatiereEnseignee();
 
     bool ajouter();
-    bool modifier(QString email);
+    bool modifier(QString id);
     bool supprimer(QString email);
 
     QSqlQueryModel* afficherEnseignants();
@@ -34,6 +34,8 @@ public:
     QSqlQueryModel* trierParNomDateEmbaucheMatiereASC();
     QSqlQueryModel* trierParNomDateEmbaucheMatiereDESC();
 
+    bool emailExists( QString &email);
+    bool telephoneExists( QString &telephone);
 
 private:
     int enseignantId;
