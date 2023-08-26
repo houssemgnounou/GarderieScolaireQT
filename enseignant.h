@@ -5,12 +5,13 @@
 #include <QSqlQuery>
 #include <QSqlQueryModel>
 #include <QDate>
+#include <QtCharts/QChartView>
 
 class Enseignant
 {
 public:
     Enseignant();
-    Enseignant(int id,QString nom, QString prenom, QDate dateNaissance, QString adresse, QString email,
+    Enseignant(QString nom, QString prenom, QDate dateNaissance, QString adresse, QString email,
                QString numeroTelephone, QDate dateEmbauche, QString matiereEnseignee);
 
     QString getNom();
@@ -23,11 +24,16 @@ public:
     QString getMatiereEnseignee();
 
     bool ajouter();
-    bool modifier();
-    bool supprimer();
+    bool modifier(QString email);
+    bool supprimer(QString email);
 
+    QSqlQueryModel* afficherEnseignants();
     QSqlQueryModel* rechercher(QString nom, QString prenom, QString matiereEnseignee);
-    QSqlQueryModel* trierParNomDateEmbaucheMatiere();
+    QString GetID(QString emailll);
+    QtCharts::QChartView* generateStatisticsChart();
+    QSqlQueryModel* trierParNomDateEmbaucheMatiereASC();
+    QSqlQueryModel* trierParNomDateEmbaucheMatiereDESC();
+
 
 private:
     int enseignantId;

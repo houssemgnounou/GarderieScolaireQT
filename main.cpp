@@ -13,8 +13,10 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+
     MainWindow w;
     w.show();
+
     int result = a.exec();
 
     connection.closeConnection();
