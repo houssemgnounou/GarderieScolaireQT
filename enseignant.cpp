@@ -40,7 +40,7 @@ Enseignant::Enseignant( QString nom, QString prenom, QDate dateNaissance, QStrin
 QSqlQueryModel* Enseignant::afficherEnseignants()
 {
     QSqlQueryModel* model = new QSqlQueryModel();
-    model->setQuery("SELECT Nom, Prenom, Date_Naissance, Adresse, Email, Numero_Telephone, Date_Embauche, Matiere_Enseignee FROM Enseignants");
+    model->setQuery("SELECT Nom, Prenom, TO_CHAR(Date_Naissance, 'DD/MM/YYYY') AS Date_Naissance, Adresse, Email, Numero_Telephone, TO_CHAR(Date_Embauche, 'DD/MM/YYYY') AS Date_Embauche, Matiere_Enseignee FROM Enseignants");
 
     model->setHeaderData(0, Qt::Horizontal, QObject::tr("Nom"));
     model->setHeaderData(1, Qt::Horizontal, QObject::tr("Prenom"));
@@ -53,6 +53,7 @@ QSqlQueryModel* Enseignant::afficherEnseignants()
 
     return model;
 }
+
 
 
 bool Enseignant::ajouter()
@@ -242,7 +243,6 @@ bool Enseignant::emailExists( QString &email)  {
         return count > 0;
     }
 
-    // Handle database error here (return false, show error message, etc.)
     return false;
 }
 
@@ -257,6 +257,5 @@ bool Enseignant::telephoneExists( QString &telephone)  {
         return count > 0;
     }
 
-    // Handle database error here (return false, show error message, etc.)
     return false;
 }

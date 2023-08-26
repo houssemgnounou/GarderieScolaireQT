@@ -33,7 +33,6 @@ private slots:
 
     void on_btn_ModifierEnseignant_clicked();
 
-
     void on_exporter_enseignant_clicked();
 
     void on_btn_OpenStat_enseignant_clicked();
@@ -42,14 +41,33 @@ private slots:
 
     void on_Trie_enseignantASC_clicked();
 
+    ///////////////////////////////////////////////////////////////// partie éleves
+
     void on_btn_openHomeEleve_clicked();
 
     void on_btn_openAjoutEleve_clicked();
+
+    void on_btn_AjouterEleve_clicked();
+
+    void on_Search_eleve_textChanged(const QString &arg1);
+
+    void on_Trie_eleveASC_clicked();
+
+    void on_Trie_eleveDESC_clicked();
+
+    void on_Supprimer_eleve_clicked();
+
+    void onEleveDoubleClicked(const QModelIndex&);
+
+    void on_btn_ModifierEleve_clicked();
+
+    void on_btn_OpenStat_eleve_clicked();
 
 private:
     Ui::MainWindow *ui;
     Enseignant enseignant;
     Eleve eleve;
     QString currentEnseignantId;
+    QString currentEleveId;
 };
 #endif // MAINWINDOW_H

@@ -5,6 +5,7 @@
 #include <QSqlQuery>
 #include <QSqlQueryModel>
 #include <QDate>
+#include <QtCharts/QChartView>
 
 class Eleve
 {
@@ -27,9 +28,11 @@ public:
     bool supprimer(QString tl);
 
     QSqlQueryModel* rechercher(QString nom, QString prenom, int classe);
-    QSqlQueryModel* trierParNomDateInscriptionClasse();
     QString GetID(QString emailll);
     QSqlQueryModel* afficherEleves();
+    bool telephoneExists( QString &telephone);
+    QSqlQueryModel* trierParNomDateInscriptionClasse(QString tri);
+    QtCharts::QChartView* generateStatisticsChart();
 
 private:
     int eleveId ;

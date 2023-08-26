@@ -5,10 +5,11 @@
 #include <QMessageBox>
 #include <QRegExp>
 #include <QValidator>
-
+#include <QDebug>
 #include <QFile>
 #include <QFileDialog>
 #include <QTextStream>
+
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -25,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Connect the double-click signal to the slot
     connect(ui->table_enseignant, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onEnseignantDoubleClicked(const QModelIndex&)));
+    connect(ui->table_eleve, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onEleveDoubleClicked(const QModelIndex&)));
 
 }
 
@@ -263,20 +265,11 @@ void MainWindow::on_btn_ModifierEnseignant_clicked()
         return;
     }
 
-    if (enseignant.emailExists(email)) {
-        QMessageBox::critical(this, "Erreur", "L'adresse e-mail existe déjà dans la base de données.");
-        return;
-    }
-
-    if (enseignant.telephoneExists(numeroTelephone)) {
-        QMessageBox::critical(this, "Erreur", "Le numéro de téléphone existe déjà dans la base de données.");
-        return;
-    }
 
     Enseignant enseignant(nom, prenom, dateNaissance, adresse, email, numeroTelephone, dateEmbauche, matiereEnseignee);
 
     if (enseignant.modifier(currentEnseignantId)) {
-        QMessageBox::information(this, "Succès", "Enseignant mis à jour avec succès.");
+      //  QMessageBox::information(this, "Succès", "Enseignant mis à jour avec succès.");
         ui->stackedWidget->setCurrentIndex(0);
         ui->table_enseignant->setModel(enseignant.afficherEnseignants());// Rafraîchir
     } else {
@@ -357,13 +350,222 @@ void MainWindow::on_btn_openHomeEleve_clicked()
     ui->table_eleve->setModel(eleve.afficherEleves());
 
     ui->stackedWidget->setCurrentIndex(2);
+
+    ui->txt_nom_eleve->clear();
+    ui->txt_prenom_eleve->clear();
+    ui->dateEdit_date_naissance_eleve->setDate(QDate::currentDate());
+    ui->txt_addresse_eleve->clear();
+    ui->txt_NomParent_eleve->clear();
+    ui->txt_NumeroParentEleve->clear();
+    ui->dateEdit_date_inscription->setDate(QDate::currentDate());
+    ui->txt_classe_eleve->clear();
 }
 
 
 void MainWindow::on_btn_openAjoutEleve_clicked()
 {
+    ui->dateEdit_date_inscription->setDate(QDate::currentDate());
     ui->btn_ModifierEleve->hide();
     ui->btn_AjouterEleve->show();
     ui->stackedWidget->setCurrentIndex(3);
+}
+
+void MainWindow::on_btn_AjouterEleve_clicked()
+{
+    QString nom = ui->txt_nom_eleve->text();
+    QString prenom = ui->txt_prenom_eleve->text();
+    QDate dateNaissance = ui->dateEdit_date_naissance_eleve->date();
+    QString adresse = ui->txt_addresse_eleve->text();
+    QString nomParent = ui->txt_NomParent_eleve->text();
+    QString numeroTelephoneParent = ui->txt_NumeroParentEleve->text();
+    QDate dateInscription = ui->dateEdit_date_inscription->date();
+    int classe = ui->txt_classe_eleve->text().toInt();
+
+    if (nom.isEmpty() || prenom.isEmpty() || adresse.isEmpty() || nomParent.isEmpty() || numeroTelephoneParent.isEmpty()) {
+        QMessageBox::critical(this, "Erreur", "Tous les champs doivent être remplis.");
+        return;
+    }
+
+    if (numeroTelephoneParent.length() != 8 || !numeroTelephoneParent.toInt()) {
+        QMessageBox::critical(this, "Erreur", "Le numéro de téléphone doit être composé de 8 chiffres.");
+        return;
+    }
+
+    int classeMin = 1;
+    int classeMax = 6;
+    if (classe < classeMin || classe > classeMax) {
+        QMessageBox::critical(this, "Erreur", "La classe doit être comprise entre 1 et 6.");
+        return;
+    }
+
+    if (eleve.telephoneExists(numeroTelephoneParent)) {
+        QMessageBox::critical(this, "Erreur", "Le numéro de téléphone existe déjà dans la base de données.");
+        return;
+    }
+
+    if (dateInscription < dateNaissance) {
+        QMessageBox::critical(this, "Erreur", "La date d'inscription ne peut pas être antérieure à la date de naissance.");
+        return;
+    }
+
+    Eleve eleve(nom, prenom, dateNaissance, adresse, nomParent, numeroTelephoneParent, dateInscription, classe);
+
+    if (eleve.ajouter()) {
+        ui->txt_nom_eleve->clear();
+        ui->txt_prenom_eleve->clear();
+        ui->dateEdit_date_naissance_eleve->setDate(QDate::currentDate());
+        ui->txt_addresse_eleve->clear();
+        ui->txt_NomParent_eleve->clear();
+        ui->txt_NumeroParentEleve->clear();
+        ui->dateEdit_date_inscription->setDate(QDate::currentDate());
+        ui->txt_classe_eleve->clear();
+
+        ui->table_eleve->setModel(eleve.afficherEleves());
+        ui->stackedWidget->setCurrentIndex(2);
+
+        QMessageBox::information(this, "Succès", "Élève ajouté avec succès.");
+    } else {
+        QMessageBox::critical(this, "Erreur", "Échec de l'ajout de l'élève.");
+    }
+}
+
+
+
+
+void MainWindow::on_Search_eleve_textChanged(const QString &searchText)
+{
+
+    QString nom = searchText.toLower();
+    QString prenom = searchText.toLower();
+    int classe = searchText.toInt();
+
+    ui->table_eleve->setModel(eleve.rechercher(nom, prenom, classe));
+}
+
+void MainWindow::on_Trie_eleveASC_clicked()
+{
+    ui->table_eleve->setModel(eleve.trierParNomDateInscriptionClasse("ASC"));
+
+}
+
+
+void MainWindow::on_Trie_eleveDESC_clicked()
+{
+    ui->table_eleve->setModel(eleve.trierParNomDateInscriptionClasse("DESC"));
+
+}
+
+
+void MainWindow::on_Supprimer_eleve_clicked()
+{
+
+    QModelIndex index = ui->table_eleve->currentIndex();
+    if (index.isValid()) {
+        QString numero = index.sibling(index.row(), 5).data().toString();
+        int choix = QMessageBox::question(this, "Confirmation", "Êtes-vous sûr de vouloir supprimer cet éleve ?", QMessageBox::Yes | QMessageBox::No);
+        if (choix == QMessageBox::Yes) {
+            if (eleve.supprimer(numero)) {
+                ui->table_eleve->setModel(eleve.afficherEleves()); // Rafraîchir TableView
+            } else {
+                QMessageBox::critical(this, "Erreur", "Échec de la suppression de l'éleve.");
+            }
+        }
+    }
+}
+
+
+void MainWindow::onEleveDoubleClicked(const QModelIndex &index)
+{
+    if (index.isValid()) {
+        ui->stackedWidget->setCurrentIndex(3);
+        ui->btn_AjouterEleve->hide();
+        ui->btn_ModifierEleve->show();
+
+        QString nom = index.sibling(index.row(), 0).data().toString();
+        QString prenom = index.sibling(index.row(), 1).data().toString();
+
+        QString dateNaissance = index.sibling(index.row(), 2).data().toString();
+        QString adresse = index.sibling(index.row(), 3).data().toString();
+        QString nomParent = index.sibling(index.row(), 4).data().toString();
+        QString numeroParent = index.sibling(index.row(), 5).data().toString();
+        QString dateInscription = index.sibling(index.row(), 6).data().toString();
+        QString classe = index.sibling(index.row(), 7).data().toString();
+
+        ui->txt_nom_eleve->setText(nom);
+        ui->txt_prenom_eleve->setText(prenom);
+        ui->dateEdit_date_naissance_eleve->setDate(QDate::fromString(dateNaissance, "dd/MM/yyyy"));
+        ui->txt_addresse_eleve->setText(adresse);
+        ui->txt_NomParent_eleve->setText(nomParent);
+        ui->txt_NumeroParentEleve->setText(numeroParent);
+        ui->dateEdit_date_inscription->setDate(QDate::fromString(dateInscription, "dd/MM/yyyy"));
+        ui->txt_classe_eleve->setText(classe);
+
+        QString id = eleve.GetID(numeroParent);
+        currentEleveId = id;
+    }
+}
+
+
+void MainWindow::on_btn_ModifierEleve_clicked()
+{
+    QString nom = ui->txt_nom_eleve->text();
+    QString prenom = ui->txt_prenom_eleve->text();
+    QDate dateNaissance = ui->dateEdit_date_naissance_eleve->date();
+    QString adresse = ui->txt_addresse_eleve->text();
+    QString nomParent = ui->txt_NomParent_eleve->text();
+    QString numeroTelephoneParent = ui->txt_NumeroParentEleve->text();
+    QDate dateInscription = ui->dateEdit_date_inscription->date();
+    int classe = ui->txt_classe_eleve->text().toInt();
+
+    if (nom.isEmpty() || prenom.isEmpty() || adresse.isEmpty() || nomParent.isEmpty() || numeroTelephoneParent.isEmpty()) {
+        QMessageBox::critical(this, "Erreur", "Tous les champs doivent être remplis.");
+        return;
+    }
+
+    if (numeroTelephoneParent.length() != 8 || !numeroTelephoneParent.toInt()) {
+        QMessageBox::critical(this, "Erreur", "Le numéro de téléphone doit être composé de 8 chiffres.");
+        return;
+    }
+
+    int classeMin = 1;
+    int classeMax = 6;
+    if (classe < classeMin || classe > classeMax) {
+        QMessageBox::critical(this, "Erreur", "La classe doit être comprise entre 1 et 6.");
+        return;
+    }
+
+
+    if (dateInscription < dateNaissance) {
+        QMessageBox::critical(this, "Erreur", "La date d'inscription ne peut pas être antérieure à la date de naissance.");
+        return;
+    }
+
+    Eleve eleve(nom, prenom, dateNaissance, adresse, nomParent, numeroTelephoneParent, dateInscription, classe);
+
+    if (eleve.modifier(currentEleveId)) {
+        ui->txt_nom_eleve->clear();
+        ui->txt_prenom_eleve->clear();
+        ui->dateEdit_date_naissance_eleve->setDate(QDate::currentDate());
+        ui->txt_addresse_eleve->clear();
+        ui->txt_NomParent_eleve->clear();
+        ui->txt_NumeroParentEleve->clear();
+        ui->dateEdit_date_inscription->setDate(QDate::currentDate());
+        ui->txt_classe_eleve->clear();
+
+        ui->table_eleve->setModel(eleve.afficherEleves());
+        ui->stackedWidget->setCurrentIndex(2);
+     //   QMessageBox::information(this, "Succès", "Élève mis à jour avec succès.");
+
+    } else {
+        QMessageBox::critical(this, "Erreur", "Échec de la mise à jour de l'éléve dans la base de données.");
+    }
+}
+
+
+void MainWindow::on_btn_OpenStat_eleve_clicked()
+{
+    QtCharts::QChartView *chartView = eleve.generateStatisticsChart();
+    ui->stackedWidget->addWidget(chartView);
+    ui->stackedWidget->setCurrentWidget(chartView);
 }
 
