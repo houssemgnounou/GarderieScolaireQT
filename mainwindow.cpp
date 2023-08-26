@@ -64,60 +64,59 @@ void MainWindow::on_btn_AjouterEnseignant_clicked()
     QString adresse = ui->txt_addresse_enseignant->text();
     QDate dateNaissance = ui->dateEdit_date_naissance_enseignant->date();
     QString email = ui->txt_email_enseignant->text();
-    QString phoneNumber = ui->txt_telephone_enseignant->text();
+    QString numeroTelephone = ui->txt_telephone_enseignant->text();
     QDate dateEmbauche = ui->dateEdit_date_embauche->date();
     QString matiereEnseignee = ui->txt_matiere_enseignee->text();
 
-    // Controle de saisie
+    // Contrôle de saisie
     if (nom.isEmpty() || prenom.isEmpty() || dateNaissance.isNull() || email.isEmpty() || dateEmbauche.isNull() || matiereEnseignee.isEmpty()) {
-        QMessageBox::critical(this, "Input Error", "Please fill in all the required fields.");
+        QMessageBox::critical(this, "Erreur de saisie", "Veuillez remplir tous les champs obligatoires.");
         return;
     }
 
-    // Email format validation
-    QRegExp emailRegex(R"(\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,4}\b)");
-    if (!email.contains(emailRegex)) {
-        QMessageBox::critical(this, "Input Error", "Please enter a valid email address.");
+    // Validation du format de l'adresse e-mail
+    QRegExp regexEmail(R"(\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,4}\b)");
+    if (!email.contains(regexEmail)) {
+        QMessageBox::critical(this, "Erreur de saisie", "Veuillez entrer une adresse e-mail valide.");
         return;
     }
 
-    // Phone number validation
+    // Validation du numéro de téléphone
     QRegExp numericOnly(R"(\d*)");
-    QValidator *phoneValidator = new QRegExpValidator(numericOnly, this);
-    int pos = 0; // This variable will receive the position of the invalid character if needed
-    if (phoneValidator->validate(phoneNumber, pos) != QValidator::Acceptable) {
-        QMessageBox::critical(this, "Input Error", "Please enter a valid phone number.");
+    QValidator *validateurTelephone = new QRegExpValidator(numericOnly, this);
+    int pos = 0; // Cette variable recevra la position du caractère invalide si nécessaire
+    if (validateurTelephone->validate(numeroTelephone, pos) != QValidator::Acceptable) {
+        QMessageBox::critical(this, "Erreur de saisie", "Veuillez entrer un numéro de téléphone valide.");
         return;
     }
 
-    if (phoneNumber.length() != 8) {
-        QMessageBox::critical(this, "Input Error", "Phone number must have exactly 8 digits.");
+    if (numeroTelephone.length() != 8) {
+        QMessageBox::critical(this, "Erreur de saisie", "Le numéro de téléphone doit comporter exactement 8 chiffres.");
         return;
     }
 
+    QDate dateActuelle = QDate::currentDate();
+    QDate ilYaDixHuitAns = dateActuelle.addYears(-18);
 
-    QDate currentDate = QDate::currentDate();
-    QDate eighteenYearsAgo = currentDate.addYears(-18);
-
-    if (dateNaissance >= currentDate) {
-        QMessageBox::critical(this, "Input Error", "Date of birth cannot be today or a future date.");
+    if (dateNaissance >= dateActuelle) {
+        QMessageBox::critical(this, "Erreur de saisie", "La date de naissance ne peut pas être aujourd'hui ni une date future.");
         return;
     }
 
-    if (dateNaissance > eighteenYearsAgo) {
-        QMessageBox::critical(this, "Input Error", "The person must be 18 years old or older.");
+    if (dateNaissance > ilYaDixHuitAns) {
+        QMessageBox::critical(this, "Erreur de saisie", "La personne doit avoir 18 ans ou plus.");
         return;
     }
 
     if (dateEmbauche < dateNaissance) {
-        QMessageBox::critical(this, "Input Error", "Date of employment cannot be before date of birth.");
+        QMessageBox::critical(this, "Erreur de saisie", "La date d'embauche ne peut pas être antérieure à la date de naissance.");
         return;
     }
 
-    Enseignant enseignant(nom, prenom, dateNaissance, adresse, email, phoneNumber, dateEmbauche, matiereEnseignee);
+    Enseignant enseignant(nom, prenom, dateNaissance, adresse, email, numeroTelephone, dateEmbauche, matiereEnseignee);
 
     if (enseignant.ajouter()) {
-        QMessageBox::information(this, "Success", "Enseignant added successfully.");
+        QMessageBox::information(this, "Succès", "Enseignant ajouté avec succès.");
         ui->txt_nom_enseignant->clear();
         ui->txt_prenom_enseignant->clear();
         ui->txt_addresse_enseignant->clear();
@@ -126,12 +125,13 @@ void MainWindow::on_btn_AjouterEnseignant_clicked()
         ui->txt_telephone_enseignant->clear();
         ui->dateEdit_date_embauche->setDate(QDate::currentDate());
         ui->txt_matiere_enseignee->clear();
-        ui->table_enseignant->setModel(enseignant.afficherEnseignants()); // refresh
+        ui->table_enseignant->setModel(enseignant.afficherEnseignants()); // rafraîchir
         ui->stackedWidget->setCurrentIndex(0);
     } else {
-        QMessageBox::critical(this, "Error", "Failed to add enseignant to the database.");
+        QMessageBox::critical(this, "Erreur", "Échec de l'ajout de l'enseignant dans la base de données.");
     }
 }
+
 
 
 void MainWindow::on_Search_enseignant_textChanged(const QString &searchText)
@@ -150,21 +150,22 @@ void MainWindow::on_Search_enseignant_textChanged(const QString &searchText)
 
 void MainWindow::on_Supprimer_enseignant_clicked()
 {
-        QModelIndex index = ui->table_enseignant->currentIndex();
-        if (index.isValid()) {
-            QString email = index.sibling(index.row(), 4).data().toString();
-            int choice = QMessageBox::question(this, "Confirmation", "Are you sure you want to delete this teacher?", QMessageBox::Yes | QMessageBox::No);
-            if (choice == QMessageBox::Yes) {
-                Enseignant teacher;
-                if (teacher.supprimer(email)) {
-                   // QMessageBox::information(this, "Success", "Teacher deleted successfully.");
-                    ui->table_enseignant->setModel(teacher.afficherEnseignants()); // Refresh TableView
-                } else {
-                    QMessageBox::critical(this, "Error", "Failed to delete teacher.");
-                }
+    QModelIndex index = ui->table_enseignant->currentIndex();
+    if (index.isValid()) {
+        QString email = index.sibling(index.row(), 4).data().toString();
+        int choix = QMessageBox::question(this, "Confirmation", "Êtes-vous sûr de vouloir supprimer cet enseignant ?", QMessageBox::Yes | QMessageBox::No);
+        if (choix == QMessageBox::Yes) {
+            Enseignant enseignant;
+            if (enseignant.supprimer(email)) {
+                // QMessageBox::information(this, "Succès", "Enseignant supprimé avec succès.");
+                ui->table_enseignant->setModel(enseignant.afficherEnseignants()); // Rafraîchir TableView
+            } else {
+                QMessageBox::critical(this, "Erreur", "Échec de la suppression de l'enseignant.");
             }
         }
+    }
 }
+
 
 void MainWindow::onEnseignantDoubleClicked(const QModelIndex &index)
 {
@@ -202,67 +203,67 @@ void MainWindow::on_btn_ModifierEnseignant_clicked()
     QString prenom = ui->txt_prenom_enseignant->text();
     QDate dateNaissance = ui->dateEdit_date_naissance_enseignant->date();
     QString adresse = ui->txt_addresse_enseignant->text();
-    QString email = ui->txt_email_enseignant->text(); // Updated email
-    QString phoneNumber = ui->txt_telephone_enseignant->text();
+    QString email = ui->txt_email_enseignant->text();
+    QString numeroTelephone = ui->txt_telephone_enseignant->text();
     QDate dateEmbauche = ui->dateEdit_date_embauche->date();
-    QString matiereEnseignee = ui->txt_matiere_enseignee->text(); // Updated matiereEnseignee
+    QString matiereEnseignee = ui->txt_matiere_enseignee->text();
 
-    //Controle de saisie
+    // Contrôle de saisie
     if (nom.isEmpty() || prenom.isEmpty() || dateNaissance.isNull() || email.isEmpty() || dateEmbauche.isNull() || matiereEnseignee.isEmpty()) {
-        QMessageBox::critical(this, "Input Error", "Please fill in all the required fields.");
+        QMessageBox::critical(this, "Erreur de saisie", "Veuillez remplir tous les champs obligatoires.");
         return;
     }
 
-    // Email format validation
-    QRegExp emailRegex(R"(\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,4}\b)");
-    if (!email.contains(emailRegex)) {
-        QMessageBox::critical(this, "Input Error", "Please enter a valid email address.");
+    // Validation du format de l'adresse e-mail
+    QRegExp regexEmail(R"(\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,4}\b)");
+    if (!email.contains(regexEmail)) {
+        QMessageBox::critical(this, "Erreur de saisie", "Veuillez entrer une adresse e-mail valide.");
         return;
     }
 
-    // Phone number validation
+    // Validation du numéro de téléphone
     QRegExp numericOnly(R"(\d*)");
-    QValidator *phoneValidator = new QRegExpValidator(numericOnly, this);
-    int pos = 0; // This variable will receive the position of the invalid character if needed
-    if (phoneValidator->validate(phoneNumber, pos) != QValidator::Acceptable) {
-        QMessageBox::critical(this, "Input Error", "Please enter a valid phone number.");
+    QValidator *validateurTelephone = new QRegExpValidator(numericOnly, this);
+    int pos = 0; // Cette variable recevra la position du caractère invalide si nécessaire
+    if (validateurTelephone->validate(numeroTelephone, pos) != QValidator::Acceptable) {
+        QMessageBox::critical(this, "Erreur de saisie", "Veuillez entrer un numéro de téléphone valide.");
         return;
     }
 
-    if (phoneNumber.length() != 8) {
-        QMessageBox::critical(this, "Input Error", "Phone number must have exactly 8 digits.");
+    if (numeroTelephone.length() != 8) {
+        QMessageBox::critical(this, "Erreur de saisie", "Le numéro de téléphone doit comporter exactement 8 chiffres.");
         return;
     }
 
+    QDate dateActuelle = QDate::currentDate();
+    QDate ilYaDixHuitAns = dateActuelle.addYears(-18);
 
-    QDate currentDate = QDate::currentDate();
-    QDate eighteenYearsAgo = currentDate.addYears(-18);
-
-    if (dateNaissance >= currentDate) {
-        QMessageBox::critical(this, "Input Error", "Date of birth cannot be today or a future date.");
+    if (dateNaissance >= dateActuelle) {
+        QMessageBox::critical(this, "Erreur de saisie", "La date de naissance ne peut pas être aujourd'hui ni une date future.");
         return;
     }
 
-    if (dateNaissance > eighteenYearsAgo) {
-        QMessageBox::critical(this, "Input Error", "The person must be 18 years old or older.");
+    if (dateNaissance > ilYaDixHuitAns) {
+        QMessageBox::critical(this, "Erreur de saisie", "La personne doit avoir 18 ans ou plus.");
         return;
     }
 
     if (dateEmbauche < dateNaissance) {
-        QMessageBox::critical(this, "Input Error", "Date of employment cannot be before date of birth.");
+        QMessageBox::critical(this, "Erreur de saisie", "La date d'embauche ne peut pas être antérieure à la date de naissance.");
         return;
     }
 
-    Enseignant enseignant(nom, prenom, dateNaissance, adresse, email, phoneNumber, dateEmbauche, matiereEnseignee);
+    Enseignant enseignant(nom, prenom, dateNaissance, adresse, email, numeroTelephone, dateEmbauche, matiereEnseignee);
 
     if (enseignant.modifier(currentEnseignantId)) {
-        QMessageBox::information(this, "Success", "Enseignant updated successfully.");
+        QMessageBox::information(this, "Succès", "Enseignant mis à jour avec succès.");
         ui->stackedWidget->setCurrentIndex(0);
-        ui->table_enseignant->setModel(enseignant.afficherEnseignants());// refresh
+        ui->table_enseignant->setModel(enseignant.afficherEnseignants());// Rafraîchir
     } else {
-        QMessageBox::critical(this, "Error", "Failed to update enseignant in the database.");
+        QMessageBox::critical(this, "Erreur", "Échec de la mise à jour de l'enseignant dans la base de données.");
     }
 }
+
 
 
 
