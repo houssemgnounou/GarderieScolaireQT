@@ -1043,7 +1043,7 @@ QTableView QScrollBar::sub-line:horizontal {
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="btn_calculerAnniversaire">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -1053,7 +1053,7 @@ QTableView QScrollBar::sub-line:horizontal {
          </rect>
         </property>
         <property name="text">
-         <string>Calcule d'age</string>
+         <string>Anniversaire</string>
         </property>
        </widget>
       </widget>

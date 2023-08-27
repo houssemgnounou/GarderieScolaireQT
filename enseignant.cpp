@@ -136,7 +136,13 @@ bool Enseignant::supprimer(QString email)
 QSqlQueryModel* Enseignant::rechercher(QString nom, QString prenom, QString matiereEnseignee)
 {
     QSqlQueryModel* model = new QSqlQueryModel();
-    QString queryString = "SELECT Nom, Prenom, Date_Naissance, Adresse, Email, Numero_Telephone, Date_Embauche, Matiere_Enseignee FROM Enseignants WHERE LOWER(Nom) LIKE '%" + nom + "%' OR LOWER(Prenom) LIKE '%" + prenom + "%' OR LOWER(Matiere_Enseignee) LIKE '%" + matiereEnseignee + "%'";
+    QString queryString = "SELECT Nom, Prenom, TO_CHAR(Date_Naissance, 'DD/MM/YYYY') AS Date_Naissance, "
+                          "Adresse, Email, Numero_Telephone, "
+                          "TO_CHAR(Date_Embauche, 'DD/MM/YYYY') AS Date_Embauche, Matiere_Enseignee "
+                          "FROM Enseignants "
+                          "WHERE LOWER(Nom) LIKE '%" + nom.toLower() + "%' OR "
+                          "LOWER(Prenom) LIKE '%" + prenom.toLower() + "%' OR "
+                          "LOWER(Matiere_Enseignee) LIKE '%" + matiereEnseignee.toLower() + "%'";
 
     model->setQuery(queryString);
 
@@ -156,7 +162,11 @@ QSqlQueryModel* Enseignant::rechercher(QString nom, QString prenom, QString mati
 QSqlQueryModel* Enseignant::trierParNomDateEmbaucheMatiereASC()
 {
     QSqlQueryModel* model = new QSqlQueryModel();
-    QString queryString = "SELECT Nom, Prenom, Date_Naissance, Adresse, Email, Numero_Telephone, Date_Embauche, Matiere_Enseignee FROM Enseignants ORDER BY Nom ASC, Date_Embauche ASC, Matiere_Enseignee ASC";
+    QString queryString = "SELECT Nom, Prenom, TO_CHAR(Date_Naissance, 'DD/MM/YYYY') AS Date_Naissance, "
+                          "Adresse, Email, Numero_Telephone, "
+                          "TO_CHAR(Date_Embauche, 'DD/MM/YYYY') AS Date_Embauche, Matiere_Enseignee "
+                          "FROM Enseignants "
+                          "ORDER BY Nom ASC, Date_Embauche ASC, Matiere_Enseignee ASC";
 
     model->setQuery(queryString);
 
@@ -175,7 +185,11 @@ QSqlQueryModel* Enseignant::trierParNomDateEmbaucheMatiereASC()
 QSqlQueryModel* Enseignant::trierParNomDateEmbaucheMatiereDESC()
 {
     QSqlQueryModel* model = new QSqlQueryModel();
-    QString queryString = "SELECT Nom, Prenom, Date_Naissance, Adresse, Email, Numero_Telephone, Date_Embauche, Matiere_Enseignee FROM Enseignants ORDER BY Nom DESC, Date_Embauche DESC, Matiere_Enseignee DESC";
+    QString queryString = "SELECT Nom, Prenom, TO_CHAR(Date_Naissance, 'DD/MM/YYYY') AS Date_Naissance, "
+                          "Adresse, Email, Numero_Telephone, "
+                          "TO_CHAR(Date_Embauche, 'DD/MM/YYYY') AS Date_Embauche, Matiere_Enseignee "
+                          "FROM Enseignants "
+                          "ORDER BY Nom DESC, Date_Embauche DESC, Matiere_Enseignee DESC";
 
     model->setQuery(queryString);
 
@@ -190,7 +204,6 @@ QSqlQueryModel* Enseignant::trierParNomDateEmbaucheMatiereDESC()
 
     return model;
 }
-
 
 
 

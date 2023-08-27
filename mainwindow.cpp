@@ -569,3 +569,37 @@ void MainWindow::on_btn_OpenStat_eleve_clicked()
     ui->stackedWidget->setCurrentWidget(chartView);
 }
 
+
+
+void MainWindow::on_btn_calculerAnniversaire_clicked()
+{
+    Eleve eleve;
+    QList<Eleve> upcomingBirthdays = eleve.getUpcomingBirthdays();
+
+    if (upcomingBirthdays.isEmpty()) {
+        QLabel *noBirthdaysLabel = new QLabel("Aucun anniversaire à venir dans les 7 prochains jours.");
+        noBirthdaysLabel->setAlignment(Qt::AlignCenter);
+        ui->stackedWidget->addWidget(noBirthdaysLabel);
+        ui->stackedWidget->setCurrentWidget(noBirthdaysLabel);
+    } else {
+        QWidget *birthdaysWidget = new QWidget();
+        QVBoxLayout *layout = new QVBoxLayout();
+
+        for (const Eleve& student : upcomingBirthdays) {
+            QString labelStr = "<b>Nom :</b> " + student.getNom() + " " + student.getPrenom() +
+                                   "<br><b>Date de naissance :</b> " + student.getDateNaissance().toString("dd/MM/yyyy");
+                                  // "<br><b>Age :</b> " + QString::number(student.getAge());
+
+            QLabel *label = new QLabel(labelStr);
+            label->setStyleSheet("QLabel { background-color: #f0f0f0; padding: 10px; border-radius: 5px; }");
+            layout->addWidget(label);
+        }
+
+        birthdaysWidget->setLayout(layout);
+
+        ui->stackedWidget->addWidget(birthdaysWidget);
+
+        ui->stackedWidget->setCurrentWidget(birthdaysWidget);
+    }
+}
+

@@ -20,7 +20,49 @@ Eleve::Eleve()
     numeroTelephoneParent = "";
     dateInscription = QDate();
     classe = 0;
+    age = 0;
 }
+
+void Eleve::setNom(const QString& nom)
+{
+    this->nom = nom;
+}
+
+void Eleve::setPrenom(const QString& prenom)
+{
+    this->prenom = prenom;
+}
+
+void Eleve::setDateNaissance(const QDate& dateNaissance)
+{
+    this->dateNaissance = dateNaissance;
+}
+
+QString Eleve::getNom() const
+{
+    return nom;
+}
+
+QString Eleve::getPrenom() const
+{
+    return prenom;
+}
+
+QDate Eleve::getDateNaissance() const
+{
+    return dateNaissance;
+}
+
+int Eleve::getAge() const
+{
+    return age;
+}
+
+void Eleve::setAge(const int& age)
+{
+    this->age = age;
+}
+
 
 Eleve::Eleve(QString nom, QString prenom, QDate dateNaissance, QString adresse, QString nomParent,
              QString numeroTelephoneParent, QDate dateInscription, int classe)
@@ -33,6 +75,13 @@ Eleve::Eleve(QString nom, QString prenom, QDate dateNaissance, QString adresse, 
     this->numeroTelephoneParent = numeroTelephoneParent;
     this->dateInscription = dateInscription;
     this->classe = classe;
+}
+
+Eleve::Eleve(QString nom, QString prenom, QDate dateNaissance)
+{
+    this->nom = nom;
+    this->prenom = prenom;
+    this->dateNaissance = dateNaissance;
 }
 
 
@@ -172,7 +221,9 @@ QSqlQueryModel* Eleve::trierParNomDateInscriptionClasse(QString sortOrder)
 {
     QSqlQueryModel* model = new QSqlQueryModel();
 
-    QString selectColumns = "Nom, Prenom, Date_Naissance, Adresse, Nom_Parent, Numero_Telephone_Parent, Date_Inscription, Classe";
+    QString selectColumns = "Nom, Prenom, TO_CHAR(Date_Naissance, 'DD/MM/YYYY') AS Date_Naissance, "
+                            "Adresse, Nom_Parent, Numero_Telephone_Parent, "
+                            "TO_CHAR(Date_Inscription, 'DD/MM/YYYY') AS Date_Inscription, Classe";
     QString orderByClause = "ORDER BY Nom " + sortOrder + ", Date_Inscription " + sortOrder + ", Classe " + sortOrder;
 
     model->setQuery("SELECT " + selectColumns + " FROM Eleves " + orderByClause);
@@ -188,6 +239,7 @@ QSqlQueryModel* Eleve::trierParNomDateInscriptionClasse(QString sortOrder)
 
     return model;
 }
+
 
 QtCharts::QChartView* Eleve::generateStatisticsChart()
 {
@@ -226,3 +278,66 @@ QtCharts::QChartView* Eleve::generateStatisticsChart()
 
     return chartView;
 }
+
+int Eleve::calculerAge() const
+{
+    QDate currentDate = QDate::currentDate();
+    int age = currentDate.year() - dateNaissance.year();
+
+    if (currentDate < dateNaissance.addYears(age)) {
+        age--;
+    }
+
+    return age;
+}
+
+
+QList<Eleve> Eleve::getUpcomingBirthdays()
+{
+    QList<Eleve> upcomingBirthdays;
+
+    QSqlQuery query;
+    query.prepare("SELECT ID_ELEVE, Nom, Prenom, Date_Naissance FROM Eleves");
+    if (!query.exec()) {
+        qDebug() << "Error executing query: " << query.lastError().text();
+        return upcomingBirthdays;
+    }
+
+    QDate currentDate = QDate::currentDate();
+    QDate endDate = currentDate.addDays(7);
+
+    while (query.next()) {
+        QString nom = query.value("Nom").toString();
+        QString prenom = query.value("Prenom").toString();
+        QDate dateNaissance = query.value("Date_Naissance").toDate();
+
+        QDate birthdateThisYear(currentDate.year(), dateNaissance.month(), dateNaissance.day());
+
+        if (birthdateThisYear >= currentDate && birthdateThisYear <= endDate) {
+            Eleve student;
+            student.setNom(nom);
+            student.setPrenom(prenom);
+            student.setDateNaissance(dateNaissance);
+         //   student.setAge(student.calculerAge());  // Calculer age
+            upcomingBirthdays.append(student);
+
+          //  qDebug() << "age : " << student.calculerAge();
+
+        }
+    }
+
+    std::sort(upcomingBirthdays.begin(), upcomingBirthdays.end(), [currentDate](const Eleve& a, const Eleve& b) {
+        QDate birthdateA(currentDate.year(), a.getDateNaissance().month(), a.getDateNaissance().day());
+        QDate birthdateB(currentDate.year(), b.getDateNaissance().month(), b.getDateNaissance().day());
+        int daysToA = currentDate.daysTo(birthdateA);
+        int daysToB = currentDate.daysTo(birthdateB);
+        return daysToA < daysToB;
+    });
+
+    return upcomingBirthdays;
+}
+
+
+
+
+

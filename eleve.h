@@ -13,6 +13,7 @@ public:
     Eleve();
     Eleve(QString nom, QString prenom, QDate dateNaissance, QString adresse, QString nomParent,
           QString numeroTelephoneParent, QDate dateInscription, int classe);
+    Eleve(QString nom, QString prenom, QDate dateNaissance);
 
     QString getNom();
     QString getPrenom();
@@ -34,6 +35,20 @@ public:
     QSqlQueryModel* trierParNomDateInscriptionClasse(QString tri);
     QtCharts::QChartView* generateStatisticsChart();
 
+    void setNom(const QString& nom);
+    void setPrenom(const QString& prenom);
+    void setDateNaissance(const QDate& dateNaissance);
+    QString getNom() const;
+    QString getPrenom() const;
+    QDate getDateNaissance() const;
+    QList<Eleve> getUpcomingBirthdays();
+    int  calculerAge() const;
+
+    void setAge(const int& age);
+    int getAge()const;
+
+
+
 private:
     int eleveId ;
     QString nom;
@@ -44,6 +59,7 @@ private:
     QString numeroTelephoneParent;
     QDate dateInscription;
     int classe;
+    int age;
 };
 
 #endif // ELEVE_H

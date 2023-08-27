@@ -63,6 +63,8 @@ private slots:
 
     void on_btn_OpenStat_eleve_clicked();
 
+    void on_btn_calculerAnniversaire_clicked();
+
 private:
     Ui::MainWindow *ui;
     Enseignant enseignant;
